@@ -32,7 +32,7 @@ function syncClock () {
 }
   
 function attackNote () {
-  const ci = (chordIndex + 1) % chords.length
+  const ci = (chordIndex) % chords.length
   const note = chords[ci][noteIndex]
   synth.triggerAttack(note)
   playedNote = note
