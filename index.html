@@ -7,10 +7,37 @@
 <script>
 /* global Tone, nn, d3, createWaveform, createSpectrum */
 const synth = new Tone.PolySynth().toDestination()
+synth.set({
+  portamento: 0,
+  oscillator: {
+    type: 'square4'
+  },
+  envelope: {
+    attack: 2,
+    decay: 1,
+    sustain: 0.2,
+    release: 2
+  }
+});
+const chorus = new Tone.Chorus(4, 2.5, 0.5);
+const gainNode = new Tone.Gain(0.5)
+const effect = new Tone.Reverb();
+const shift = new Tone.PitchShift(0);
+// const shift = new Tone.Phaser({
+//     frequency: 15,
+//     octaves: 1,
+//     baseFrequency: 1000
+// });
+synth.connect(chorus);
+chorus.connect(effect);
+effect.connect(shift);
+shift.connect(gainNode);
+gainNode.toDestination();
+
 // collection of chords
 const chords = [
-  ['C4', 'E4', 'G4'],
-  ['D4', 'F#4', 'A4']
+  ['A4', 'C4', 'E4', 'A5'],
+  ['E4', 'G#4', 'B4', 'D4']
 ]
 let lastSecond = -1 // this is to "gate" the conditional below
 let playedNote // we'll use this to keep track of the note we played
