@@ -1,4 +1,6 @@
-<body></body>
+<body>
+    <p id="time"></p>
+</body>
 <script src="https://unpkg.com/tone"></script>
 <script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js?v=1"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -13,16 +15,18 @@ synth.set({
     type: 'square4'
   },
   envelope: {
-    attack: 2,
+    attack: 1,
     decay: 1,
     sustain: 0.2,
     release: 2
-  }
+  },
+  volume: 10, 
 });
 const chorus = new Tone.Chorus(4, 2.5, 0.5);
 const gainNode = new Tone.Gain(0.5)
 const effect = new Tone.Reverb();
-const shift = new Tone.PitchShift(0);
+const vol = new Tone.Volume();
+vol.volume.value = -20;
 // const shift = new Tone.Phaser({
 //     frequency: 15,
 //     octaves: 1,
@@ -30,9 +34,9 @@ const shift = new Tone.PitchShift(0);
 // });
 synth.connect(chorus);
 chorus.connect(effect);
-effect.connect(shift);
-shift.connect(gainNode);
-gainNode.toDestination();
+effect.connect(gainNode);
+gainNode.connect(vol);
+vol.toDestination();
 
 // collection of chords
 const chords = [
@@ -42,8 +46,10 @@ const chords = [
 let lastSecond = -1 // this is to "gate" the conditional below
 let playedNote // we'll use this to keep track of the note we played
 let chordIndex = 0 // which chord in the collection
+let time = 0;
 let noteIndex = 1 // which note in the chord (try each person setting a different noteIndex to start with)
-
+let volume_adj = 5;
+let last_sec_2 = -1; // for gating the chord conditional
 
 // we'll use our system clock (new Date) to stay in sync
 function syncClock () {
@@ -51,16 +57,36 @@ function syncClock () {
   const d = new Date()
   const s = d.getSeconds() 
   // every 4 seconds switch chord
-  if (s % 4 === 0 && s !== lastSecond) {
-    chordIndex++
-    lastSecond = s // this ensures it only updates once per second
+  if (s !==lastSecond) {
+    time++
+    document.getElementById("time").textContent = "Time elapsed: " + time;
+    lastSecond = s
+  }
+  if (time % 4 === 0 && time != last_sec_2) {
+    chordIndex++;
     console.log(chordIndex)
+    last_sec_2 = time;
   } 
 }
   
 function attackNote () {
+  if (time < 10) {
+    vol.volume.value -= volume_adj;
+  }
+  else if (time < 20 && time > 10) {
+    vol.volume.value += volume_adj;
+  }
+  else if (time > 32 && time < 48) {
+    vol.volume.value += volume_adj;
+  }
+  else if (time > 48 && time < 56) {
+    vol.volume.value -= volume_adj;
+  } else if (time > 56 && time < 64) {
+    vol.volume.value += volume_adj;
+  }
+
   const ci = (chordIndex) % chords.length
-  const note = chords[ci][noteIndex]
+  const note = chords[ci][noteIndex] //chnge
   synth.triggerAttack(note)
   playedNote = note
 }
