@@ -8,6 +8,8 @@
 <script src="https://algorithmicmusic.online/js/create-waveform.js"></script>
 <script>
 /* global Tone, nn, d3, createWaveform, createSpectrum */
+let vol = 10;
+
 const synth = new Tone.PolySynth().toDestination()
 synth.set({
   portamento: 0,
@@ -20,13 +22,21 @@ synth.set({
     sustain: 0.2,
     release: 2
   },
-  volume: 10, 
+  volume: vol, 
 });
+
+const SOLO = ['D4', 'C4', 'D4', 'A4', 'D4', 'C4', 
+            'D4', 'E4', 'F4', 'E4', 'D4', 'C4', 'A3',
+            'D4', 'C4', 'D4', 'A4', 'D4', 'C4',
+            'F4', 'A4', 'Bb4', 'A4',
+            'D4', 'C4', 'D4', 'A4', 'D4', 'C4', 
+            'D4', 'E4', 'F4', 'E4', 'D4', 'C4', 'A3',
+            'D4', 'C4', 'D4', 'A4', 'D4', 'C4',
+            'D5', 'C#5',]
+
 const chorus = new Tone.Chorus(4, 2.5, 0.5);
-const gainNode = new Tone.Gain(0.5)
+// const gainNode = new Tone.Gain(0.5)
 const effect = new Tone.Reverb();
-const vol = new Tone.Volume();
-vol.volume.value = -20;
 // const shift = new Tone.Phaser({
 //     frequency: 15,
 //     octaves: 1,
@@ -34,9 +44,7 @@ vol.volume.value = -20;
 // });
 synth.connect(chorus);
 chorus.connect(effect);
-effect.connect(gainNode);
-gainNode.connect(vol);
-vol.toDestination();
+effect.toDestination();
 
 // collection of chords
 const chords = [
@@ -48,8 +56,9 @@ let playedNote // we'll use this to keep track of the note we played
 let chordIndex = 0 // which chord in the collection
 let time = 0;
 let noteIndex = 1 // which note in the chord (try each person setting a different noteIndex to start with)
-let volume_adj = 5;
+let volume_adj = 1;
 let last_sec_2 = -1; // for gating the chord conditional
+let solo_idx = 0;
 
 // we'll use our system clock (new Date) to stay in sync
 function syncClock () {
@@ -70,25 +79,32 @@ function syncClock () {
 }
   
 function attackNote () {
-  if (time < 10) {
-    vol.volume.value -= volume_adj;
-  }
-  else if (time < 20 && time > 10) {
-    vol.volume.value += volume_adj;
+
+  // TIME STAMPS
+//   else if (time >= 64 && time < 96) {
+  if (time <= 32) {
+    synth.triggerAttack(SOLO[solo_idx % SOLO.length]);
+    playedNote = SOLO[solo_idx % SOLO.length];
+    solo_idx++;
+    
+    return;
   }
   else if (time > 32 && time < 48) {
-    vol.volume.value += volume_adj;
+    vol += volume_adj;
+    synth.set({volume: vol});
   }
   else if (time > 48 && time < 56) {
-    vol.volume.value -= volume_adj;
-  } else if (time > 56 && time < 64) {
-    vol.volume.value += volume_adj;
+    vol -= volume_adj;
+    synth.set({volume: vol});
+  } else if (time > 56 && time < 63) {
+    vol += volume_adj;
+    synth.set({volume: vol});
+  } else if (time > 63 && time < 64) {
+    
   }
-
   const ci = (chordIndex) % chords.length
   const note = chords[ci][noteIndex] //chnge
   synth.triggerAttack(note)
-  playedNote = note
 }
   
 function releaseNote () {
