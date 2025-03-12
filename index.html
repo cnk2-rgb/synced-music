@@ -17,12 +17,11 @@ synth.set({
     type: 'square4'
   },
   envelope: {
-    attack: 1,
+    attack: 2,
     decay: 1,
     sustain: 0.2,
     release: 2
-  },
-  volume: vol, 
+  }
 });
 
 const SOLO = ['D4', 'C4', 'D4', 'A4', 'D4', 'C4', 
@@ -32,7 +31,61 @@ const SOLO = ['D4', 'C4', 'D4', 'A4', 'D4', 'C4',
             'D4', 'C4', 'D4', 'A4', 'D4', 'C4', 
             'D4', 'E4', 'F4', 'E4', 'D4', 'C4', 'A3',
             'D4', 'C4', 'D4', 'A4', 'D4', 'C4',
-            'D5', 'C#5',]
+            'D5', 'C#5']
+
+const intro_chords = [
+ ['C5', 'G4', 'E4', 'C3'],
+ ['E5', 'A5', 'A4', 'C3']
+]
+const odyssey_chords = [
+ ['C4', 'C4', 'C4', 'C3'], // whoever is idx = 1 has solo
+ ['C4', 'C4', 'C4', 'C3'],
+ ['C4', 'C4', 'C4', 'C3'],
+ ['G4', 'Eb5', 'F4', 'C3'],
+ ['C4', 'C4', 'C4', 'C3'], // whoever is idx = 1 has solo
+ ['C4', 'C4', 'C4', 'C3'],
+ ['C4', 'C4', 'C4', 'C3'],
+ ['F4', 'A5', 'F4', 'C3']
+]
+
+const crunchy_end_chord = [
+['A4', 'C4', 'E4', 'A3']
+]
+
+const bridge_chords = [
+  ['A5', 'E4', 'C4', 'A3'],
+  ['E5', 'C5', 'A4', 'F3'],
+  ['A5', 'E4', 'C4', 'A3'],
+  ['F5', 'C5', 'A4', 'F3'],
+  ['A5', 'E4', 'C4', 'A3'],
+  ['C6', 'G4', 'E4', 'C3'],
+  ['F5', 'C5', 'A4', 'F3'],
+  ['E5', 'D5', 'B4', 'G3']
+];
+
+const back_tg_chords = [
+  ['A5', 'E4', 'C4', 'A3'],
+  ['F5', 'C5', 'A4', 'F3'],
+  ['D5', 'A4', 'F4', 'D3'],
+  ['G5', 'D5', 'B4', 'G3'],
+  ['A5', 'E4', 'C4', 'A3'],
+  ['A5', 'D5', 'B4', 'A3'],
+  ['A5', 'E4', 'C4', 'A3'],
+  ['F5', 'D5', 'B4', 'A3']
+];
+
+const outro_chords = [
+  ['A5', 'E4', 'C4', 'A3'],
+  ['F5', 'D5', 'B4', 'A3'],
+  ['A5', 'E4', 'C4', 'A3'],
+  ['A5', 'D5', 'B4', 'A3'],
+  ['A5', 'E4', 'C4', 'A3'],
+  ['F5', 'D5', 'B4', 'A3'],
+  ['A5', 'E4', 'C4', 'A3'],
+  ['A5', 'E4', 'C4', 'A3']
+];
+
+
 
 const chorus = new Tone.Chorus(4, 2.5, 0.5);
 // const gainNode = new Tone.Gain(0.5)
@@ -47,18 +100,21 @@ chorus.connect(effect);
 effect.toDestination();
 
 // collection of chords
-const chords = [
-  ['A4', 'C4', 'E4', 'A5'],
-  ['E4', 'G#4', 'B4', 'D4']
-]
+// const chords = [
+//   ['A4', 'C4', 'E4', 'A5'],
+//   ['E4', 'G#4', 'B4', 'D4']
+// ]
+let chords = intro_chords;
 let lastSecond = -1 // this is to "gate" the conditional below
 let playedNote // we'll use this to keep track of the note we played
 let chordIndex = 0 // which chord in the collection
 let time = 0;
-let noteIndex = 1 // which note in the chord (try each person setting a different noteIndex to start with)
-let volume_adj = 1;
+let noteIndex = 2; // which note in the chord (try each person setting a different noteIndex to start with)
+let volume_adj = 0.5;
 let last_sec_2 = -1; // for gating the chord conditional
 let solo_idx = 0;
+let wetness = 0;
+let wet_adj = 0.1;
 
 // we'll use our system clock (new Date) to stay in sync
 function syncClock () {
@@ -82,29 +138,65 @@ function attackNote () {
 
   // TIME STAMPS
 //   else if (time >= 64 && time < 96) {
-  if (time <= 32) {
+  
+  if (time >= 32 && time < 48) {
+    chords = odyssey_chords;
+    vol += volume_adj;
+    synth.set({volume: vol});
+  }
+  else if (time >= 48 && time < 56) {
+    vol -= volume_adj;
+    synth.set({volume: vol});
+    
+  } else if (time >= 56 && time < 64) {
+    vol += volume_adj;
+    wetness += wet_adj;
+    synth.set({volume: vol, wet: wet});
+  } else if (time >= 64 && time < 96) {
+    synth.set({
+        portamento: 0.2,
+        oscillator: {
+            type: 'sawtooth'
+        },
+        envelope: {
+            attack: 0.03,
+            decay: 0.1,
+            sustain: 0.2,
+            release: 0.02
+        }
+    });
     synth.triggerAttack(SOLO[solo_idx % SOLO.length]);
     playedNote = SOLO[solo_idx % SOLO.length];
     solo_idx++;
     
     return;
-  }
-  else if (time > 32 && time < 48) {
-    vol += volume_adj;
-    synth.set({volume: vol});
-  }
-  else if (time > 48 && time < 56) {
-    vol -= volume_adj;
-    synth.set({volume: vol});
-  } else if (time > 56 && time < 63) {
-    vol += volume_adj;
-    synth.set({volume: vol});
-  } else if (time > 63 && time < 64) {
-    
-  }
+  } else if (time >= 96 && time < 100) {
+    chords = crunchy_end_chord
+  } 
+  else if (time >= 100 && time < 124) {
+    synth.set({
+        portamento: 0,
+        oscillator: {
+            type: 'square4'
+        },
+        envelope: {
+            attack: 1,
+            decay: 1,
+            sustain: 0.2,
+            release: 2
+        },
+        volume: vol, 
+        });
+} else if (time >= 132 && time < 156) {
+    chords = back_tg_chords;
+} else if (time >= 164) {
+    chords = outro_chords;
+} 
+
   const ci = (chordIndex) % chords.length
   const note = chords[ci][noteIndex] //chnge
   synth.triggerAttack(note)
+  playedNote = note;
 }
   
 function releaseNote () {
