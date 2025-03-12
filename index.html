@@ -8,7 +8,7 @@
 <script src="https://algorithmicmusic.online/js/create-waveform.js"></script>
 <script>
 /* global Tone, nn, d3, createWaveform, createSpectrum */
-let vol = 10;
+let vol = 5;
 
 const synth = new Tone.PolySynth().toDestination()
 synth.set({
@@ -107,14 +107,15 @@ effect.toDestination();
 let chords = intro_chords;
 let lastSecond = -1 // this is to "gate" the conditional below
 let playedNote // we'll use this to keep track of the note we played
-let chordIndex = 0 // which chord in the collection
+let chordIndex = -1 // which chord in the collection
 let time = 0;
 let noteIndex = 2; // which note in the chord (try each person setting a different noteIndex to start with)
-let volume_adj = 0.5;
+let volume_adj = 0.1;
 let last_sec_2 = -1; // for gating the chord conditional
 let solo_idx = 0;
 let wetness = 0;
-let wet_adj = 0.1;
+let wet_adj = 1;
+let note;
 
 // we'll use our system clock (new Date) to stay in sync
 function syncClock () {
@@ -152,8 +153,10 @@ function attackNote () {
   } else if (time >= 56 && time < 64) {
     vol += volume_adj;
     wetness += wet_adj;
-    synth.set({volume: vol, wet: wet});
+    synth.set({volume: vol});
+    effect.set({wet: 1})
   } else if (time >= 64 && time < 96) {
+    effect.set({wet: 0})
     synth.set({
         portamento: 0.2,
         oscillator: {
@@ -164,14 +167,17 @@ function attackNote () {
             decay: 0.1,
             sustain: 0.2,
             release: 0.02
-        }
+        },
+        volume: vol,
     });
-    synth.triggerAttack(SOLO[solo_idx % SOLO.length]);
-    playedNote = SOLO[solo_idx % SOLO.length];
+    note = SOLO[solo_idx % SOLO.length]
+    synth.triggerAttack(note);
+    playedNote = note;
     solo_idx++;
     
     return;
   } else if (time >= 96 && time < 100) {
+    console.log("end chord");
     chordIndex = 0;
     chords = crunchy_end_chord;
   } 
@@ -200,7 +206,7 @@ function attackNote () {
 } 
 
   const ci = (chordIndex) % chords.length
-  const note = chords[ci][noteIndex] //chnge
+  note = chords[ci][noteIndex] //chnge
   synth.triggerAttack(note)
   playedNote = note;
 }
