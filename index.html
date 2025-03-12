@@ -105,10 +105,10 @@ effect.toDestination();
 //   ['E4', 'G#4', 'B4', 'D4']
 // ]
 let chords = intro_chords;
-let lastSecond = -1 // this is to "gate" the conditional below
+let lastSecond = -1; // this is to "gate" the conditional below
 let playedNote // we'll use this to keep track of the note we played
-let chordIndex = -1 // which chord in the collection
-let time = 0;
+let chordIndex = 0; // which chord in the collection
+let time = -1;
 let noteIndex = 2; // which note in the chord (try each person setting a different noteIndex to start with)
 let volume_adj = 0.1;
 let last_sec_2 = -1; // for gating the chord conditional
