@@ -140,6 +140,7 @@ function attackNote () {
 //   else if (time >= 64 && time < 96) {
   
   if (time >= 32 && time < 48) {
+    chordIndex = 0;
     chords = odyssey_chords;
     vol += volume_adj;
     synth.set({volume: vol});
@@ -171,7 +172,8 @@ function attackNote () {
     
     return;
   } else if (time >= 96 && time < 100) {
-    chords = crunchy_end_chord
+    chordIndex = 0;
+    chords = crunchy_end_chord;
   } 
   else if (time >= 100 && time < 124) {
     synth.set({
@@ -187,9 +189,13 @@ function attackNote () {
         },
         volume: vol, 
         });
+    chordIndex = 0;
+    chords = bridge_chords;
 } else if (time >= 132 && time < 156) {
+    chordIndex = 0;
     chords = back_tg_chords;
 } else if (time >= 164) {
+    chordIndex = 0;
     chords = outro_chords;
 } 
 
@@ -213,5 +219,13 @@ nn.create('button')
   .addTo('body')
   .on('mousedown', attackNote)
   .on('mouseup', releaseNote)
+
+// nn.on('keydown', (e) => {
+//   if (e.key === ' ') attackNote()
+// })
+
+// nn.on('keydown', (e) => {
+//   if (e.key === 'r') releaseNote()
+// })
 
 </script>
